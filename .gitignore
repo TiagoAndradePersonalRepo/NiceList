@@ -1,0 +1,4 @@
+NiceList/nls
+NiceList/*.o
+NiceList/.listableFile.txt
+NiceList/listableFolder
