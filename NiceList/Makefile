@@ -9,17 +9,19 @@ ifeq "${OS}" "Windows_NT"
 	RUNTARGET := $(EXE).exe 
 else 
 detected_OS := $(shell uname -s)
+	DEPL := cp $(EXE) ~/CustomBins/
 	TARGET := $(EXE) 
 	CLEAN := rm -f *.o $(EXE) 
-	RUNTARGET := ./$(EXE) 
- 
+	RUNTARGET := ./$(EXE)  
 endif 
 
 SOURCES1 := $(wildcard *.c)
 SOURCES2 := $(wildcard *.cpp) 
+
 OBJS1 := $(subst .c,.o,$(SOURCES1)) 
 OBJS2 := $(subst .cpp,.o,$(SOURCES2)) 
 OBJS_UNIX := $(OBJS1) $(OBJS2) 
+
 OBJS3 := $(subst .c,.obj,$(SOURCES1)) 
 OBJS4 := $(subst .cpp,.obj,$(SOURCES2))
 OBJS_WIN := $(OBJS3) $(OBJS4) 
@@ -55,10 +57,14 @@ $(EXE): $(OBJS_UNIX)
 
 $(EXE).exe: $(OBJS_WIN) 	
 		@echo $(OBJS_WIN)
-		LINK  /WX $(OBJS_WIN) /LIBPATH:C:\GLUT  /OUT:$(EXE).exe
+		LINK  /WX $(OBJS_WIN) /LIBPATH:C:\GLUT  /OUT:$(EXE_NAME).exe
 		
 clean: 
 	$(CLEAN) 
 
 run:  all   
 	$(RUNTARGET)
+
+full: all
+	$(RUNTARGET)
+	$(DEPL)
