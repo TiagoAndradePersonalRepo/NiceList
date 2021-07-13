@@ -8,6 +8,16 @@
 # include <string.h>
 # include <stdlib.h>
 
+// Colors
+char* Black =  "\033[0;30m";
+char* Red = "\033[0;31m";
+char* Green = "\033[0;32m";
+char* Yellow = "\033[0;33m";
+char* Blue = "\033[0;34m";
+char* Purple = "\033[0;35m";
+char* Cyan = "\033[0;36m";
+char* White = "\033[0;37";
+char* No_Color = "\033[0m";
 // Config
 const char* DEFAULT_TIME_FORMAT = "%H:%M:%S %d/%m/%Y";
 
@@ -57,21 +67,21 @@ static int filetypeletter(int mode) {
 
 
 // Based on https://stackoverflow.com/questions/10323060/printing-file-permissions-like-ls-l-using-stat2-in-c (answer from Jonathon Leffler)
-static char* lsperms (int mode) {
-    static const char *rwx[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};       
-   
+char* lsperms (int mode) {
+    static const char* rwx[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};        
     const bool has_perms_spaces = HAS_PERMS_SPACES;
- 
+
     int other_pos = 3;
     int bits_size = 12;
+    int offset = 0;
+
     if (has_perms_spaces)  {
         bits_size += 3;
         other_pos++;
     }
     
     /* static */ char bits[bits_size];
-    bits[0] = filetypeletter(mode);
-    int offset = 0;
+    bits[0] = filetypeletter(mode);    
     
     if (has_perms_spaces) {
         bits[1] = ' ';
@@ -97,7 +107,7 @@ static char* lsperms (int mode) {
         bits[other_pos * 2] = (mode & S_IXGRP) ? 's' : 'l';
     if (mode & S_ISVTX)
         bits[other_pos * 3] = (mode & S_IXOTH) ? 't' : 'T';
-
+    
     bits_size -= 2;
     bits[bits_size] = ' ';
     
@@ -105,7 +115,16 @@ static char* lsperms (int mode) {
     bits[bits_size] = '\0';
 
     printf(bits);
-    return bits;
+        
+    // printf("MODE: %x \n", mode);
+    
+    if (bits[0] == 'd') {
+        return Blue;
+    } else if ((mode & 0x0059) != 0) {
+        return Green;
+    }
+    
+    return No_Color; // 0 if white, 1 if blue 2 if green
 }
 
 int find_max_filename_size(DIR* dir) {
@@ -140,6 +159,14 @@ char* readable_fs(double size/*in bytes*/, char *buf) {
     sprintf(buf, "%.*f%s", i, size, units[i]);
     printf("%8s ", buf);
     return buf;
+}
+
+void print_by_color(char* color, char* text) {
+    printf(color); // Set the text to the color red
+    printf(text); // Display Hello in red
+    printf("\033[0m"); // Resets the text to default color
+    // Escape is: \033
+    // Color code is: [0;31m
 }
 
 void all_files(DIR* dir, int columns, int max_filename_size) {
@@ -178,13 +205,13 @@ void all_files(DIR* dir, int columns, int max_filename_size) {
             char file_size[6];
             sprintf(file_size, "%5.ld", buf.st_size);
 
-            char bufls[8];
+            //char bufls[8];
             readable_fs(buf.st_size, file_size);
         }
 
-        if (HAS_PERMISSIONS) {
-            lsperms(buf.st_mode);
-        }
+        //if (HAS_PERMISSIONS) {
+            char* color = lsperms(buf.st_mode);
+        //}
 
         if (HAS_DATE) {
             char time[20]; 
@@ -198,8 +225,10 @@ void all_files(DIR* dir, int columns, int max_filename_size) {
         // https://www.theurbanpenguin.com/4184-2/
        
         // printf("%6s %s %-*s", file_size, nice_perms, max_filename_size, filename); 
+        printf(color);
         printf("%-*s", max_filename_size, filename); 
-
+        printf(No_Color);
+        printf(""); 
         sum += string_item_size + 3;
         if (sum > columns) {
             printf("\n");
@@ -216,15 +245,15 @@ void all_files(DIR* dir, int columns, int max_filename_size) {
     closedir(dir);
 }
 
-int main(int argc, char *argv[]) {
-    printf("Hello\n");
-
+int main(int argc, char* argv[]) {
+    //printf("Hello\n");
+    print_by_color(Red, "Hello\n");
     char* str_dir = ".";
     if (argc > 1) {
         str_dir = argv[1];
     }
 
-    DIR* dir = opendir(str_dir);// only filename works correctly if the filepath is not .
+    DIR* dir = opendir(str_dir); // only filename works correctly if the filepath is not .
 
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
@@ -238,13 +267,10 @@ int main(int argc, char *argv[]) {
         return 1;
 
     } else {
-
         int max_filename_size = find_max_filename_size(dir);
-
         printf("max filename size %d\n\n", max_filename_size);
 
         dir = opendir(str_dir);
-
         all_files(dir, columns, max_filename_size);
     }
 
