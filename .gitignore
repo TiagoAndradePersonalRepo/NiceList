@@ -1,4 +1,4 @@
-NiceList/nls
-NiceList/*.o
-NiceList/.listableFile.txt
-NiceList/listableFolder
+nls
+*.o
+.listableFile.txt
+listableFolder
