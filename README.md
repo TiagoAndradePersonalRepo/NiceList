@@ -1,6 +1,4 @@
-# [__CoolProjects__](../README.md) #
-
-# NiceList #
+# __NiceList__ #
 
 This project is a new version of the __ls__ command from __bash__ and it's being developed in __C__. 
 
@@ -23,8 +21,6 @@ This project is a new version of the __ls__ command from __bash__ and it's being
 ```
 
  ## Future Features ##
-
-- Add color support (Wich I have no ideia on how to do XD)
 
 - Fix a problem with relative paths.
 
